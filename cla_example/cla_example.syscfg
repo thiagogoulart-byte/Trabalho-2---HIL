@@ -1,0 +1,170 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --board "/boards/LAUNCHXL_F28379D" --device "F2837xD" --part "F2837xD_337ZWT" --package "F2837xD_337ZWT" --context "CPU1" --product "C2000WARE@26.00.00.00"
+ * @v2CliArgs --board "/boards/LAUNCHXL_F28379D" --device "TMS320F28379D" --package "337ZWT" --context "CPU1" --product "C2000WARE@26.00.00.00"
+ * @versions {"tool":"1.27.0+4565"}
+ */
+
+/**
+ * Import the modules used in this configuration.
+ */
+const adc              = scripting.addModule("/driverlib/adc.js", {}, false);
+const adc1             = adc.addInstance();
+const cla              = scripting.addModule("/driverlib/cla.js", {}, false);
+const cla1             = cla.addInstance();
+const cputimer         = scripting.addModule("/driverlib/cputimer.js", {}, false);
+const cputimer1        = cputimer.addInstance();
+const dac              = scripting.addModule("/driverlib/dac.js", {}, false);
+const dac1             = dac.addInstance();
+const epwm             = scripting.addModule("/driverlib/epwm.js", {}, false);
+const epwm1            = epwm.addInstance();
+const epwm2            = epwm.addInstance();
+const gpio             = scripting.addModule("/driverlib/gpio.js", {}, false);
+const gpio1            = gpio.addInstance();
+const gpio2            = gpio.addInstance();
+const gpio3            = gpio.addInstance();
+const gpio4            = gpio.addInstance();
+const inputxbar_input  = scripting.addModule("/driverlib/inputxbar_input.js", {}, false);
+const inputxbar_input1 = inputxbar_input.addInstance();
+const inputxbar_input2 = inputxbar_input.addInstance();
+const inputxbar_input3 = inputxbar_input.addInstance();
+const inputxbar_input4 = inputxbar_input.addInstance();
+const memcfg           = scripting.addModule("/driverlib/memcfg.js");
+
+/**
+ * Write custom configuration values to the imported modules.
+ */
+adc1.$name              = "ADC0";
+adc1.adcClockPrescaler  = "ADC_CLK_DIV_4_0";
+adc1.interruptPulseMode = "ADC_PULSE_END_OF_CONV";
+adc1.useInterrupts      = false;
+adc1.soc0SampleWindow   = 15;
+adc1.enableInterrupt1   = true;
+adc1.enabledSOCs        = ["ADC_SOC_NUMBER0"];
+adc1.soc0Trigger        = "ADC_TRIGGER_CPU1_TINT0";
+
+cla1.$name             = "myCLA0";
+cla1.enable_CLA_TASK_2 = false;
+cla1.enable_CLA_TASK_4 = false;
+cla1.enable_CLA_TASK_3 = false;
+cla1.enable_CLA_TASK_5 = false;
+cla1.enable_CLA_TASK_6 = false;
+cla1.enable_CLA_TASK_7 = false;
+cla1.enable_CLA_TASK_8 = false;
+cla1.cpuint_CLA_TASK_7 = false;
+cla1.cpuint_CLA_TASK_8 = false;
+cla1.cpuint_CLA_TASK_6 = false;
+cla1.cpuint_CLA_TASK_5 = false;
+cla1.cpuint_CLA_TASK_4 = false;
+cla1.cpuint_CLA_TASK_2 = false;
+cla1.cpuint_CLA_TASK_3 = false;
+
+cputimer1.$name                    = "readGPIO";
+cputimer1.enableInterrupt          = true;
+cputimer1.registerInterrupts       = true;
+cputimer1.startTimer               = true;
+cputimer1.timerPeriod              = 9999;
+cputimer1.timerInt.enableInterrupt = true;
+
+dac1.$name            = "DAC_iL";
+dac1.referenceVoltage = "DAC_REF_ADC_VREFHI";
+dac1.enableOutput     = true;
+dac1.dacBase          = "DACB_BASE";
+
+epwm1.$name                                                      = "myEPWM0";
+epwm1.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_shadowMode            = true;
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_B_shadowMode            = true;
+epwm1.epwmCounterCompare_cmpA                                    = 1875;
+epwm1.epwmCounterCompare_cmpB                                    = 1875;
+epwm1.epwmDeadband_delayRED                                      = 250;
+epwm1.epwmEventTrigger_enableInterrupt                           = true;
+epwm1.epwmEventTrigger_interruptSource                           = "EPWM_INT_TBCTR_PERIOD";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_B_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_HIGH";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_B_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_LOW";
+epwm1.epwmTimebase_period                                        = 5000;
+epwm1.epwm.$assign                                               = "EPWM1";
+epwm1.epwm.epwm_aPin.$assign                                     = "boosterpack1.40";
+epwm1.epwm.epwm_bPin.$assign                                     = "boosterpack1.39";
+
+epwm2.$name                                                      = "myEPWM1";
+epwm2.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_shadowMode            = true;
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_B_shadowMode            = true;
+epwm2.epwmDeadband_delayRED                                      = 250;
+epwm2.epwmEventTrigger_enableInterrupt                           = true;
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_HIGH";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_LOW";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_B_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_B_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm2.epwmTimebase_period                                        = 5000;
+epwm2.epwm.epwm_aPin.$assign                                     = "boosterpack1.36";
+epwm2.epwm.epwm_bPin.$assign                                     = "boosterpack1.35";
+
+gpio1.$name                     = "GPIO_S1";
+gpio1.useInterrupt              = true;
+gpio1.gpioPin.$assign           = "boosterpack1.2";
+gpio1.xint.enableInt            = true;
+gpio1.xint.registerInterrupts   = true;
+gpio1.xint.intType              = "GPIO_INT_TYPE_BOTH_EDGES";
+gpio1.xint.xInt.enableInterrupt = true;
+
+gpio2.$name                     = "GPIO_S2";
+gpio2.useInterrupt              = true;
+gpio2.gpioPin.$assign           = "boosterpack1.8";
+gpio2.xint.xintNum              = "GPIO_INT_XINT2";
+gpio2.xint.intType              = "GPIO_INT_TYPE_BOTH_EDGES";
+gpio2.xint.enableInt            = true;
+gpio2.xint.registerInterrupts   = true;
+gpio2.xint.xInt.enableInterrupt = true;
+
+gpio3.$name                     = "GPIO_S3";
+gpio3.useInterrupt              = true;
+gpio3.gpioPin.$assign           = "boosterpack1.5";
+gpio3.xint.enableInt            = true;
+gpio3.xint.registerInterrupts   = true;
+gpio3.xint.intType              = "GPIO_INT_TYPE_BOTH_EDGES";
+gpio3.xint.xintNum              = "GPIO_INT_XINT3";
+gpio3.xint.xInt.enableInterrupt = true;
+
+gpio4.$name                     = "GPIO_S4";
+gpio4.qualMode                  = "GPIO_QUAL_ASYNC";
+gpio4.useInterrupt              = true;
+gpio4.gpioPin.$assign           = "boosterpack1.6";
+gpio4.xint.xintNum              = "GPIO_INT_XINT4";
+gpio4.xint.enableInt            = true;
+gpio4.xint.registerInterrupts   = true;
+gpio4.xint.intType              = "GPIO_INT_TYPE_BOTH_EDGES";
+gpio4.xint.xInt.enableInterrupt = true;
+
+inputxbar_input1.$name         = "myINPUTXBARINPUT0";
+gpio1.xint.inputxbar           = inputxbar_input1;
+inputxbar_input1.inputxbarGpio = "GPIO32";
+
+inputxbar_input2.$name         = "myINPUTXBARINPUT2";
+gpio3.xint.inputxbar           = inputxbar_input2;
+inputxbar_input2.inputxbarGpio = "GPIO67";
+
+inputxbar_input3.$name         = "myINPUTXBARINPUT1";
+gpio2.xint.inputxbar           = inputxbar_input3;
+inputxbar_input3.inputxbarGpio = "GPIO22";
+
+inputxbar_input4.$name         = "myINPUTXBARINPUT3";
+gpio4.xint.inputxbar           = inputxbar_input4;
+inputxbar_input4.inputxbarGpio = "GPIO111";
+
+memcfg.init_MEMCFG_SECT_MSGCPUTOCLA1 = true;
+memcfg.init_MEMCFG_SECT_MSGCLA1TOCPU = true;
+memcfg.config_MEMCFG_SECT_LS1        = "CLA_data";
+memcfg.config_MEMCFG_SECT_LS4        = "CLA_prog";
+memcfg.config_MEMCFG_SECT_LS5        = "CLA_prog";
+
+/**
+ * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
+ * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
+ * re-solve from scratch.
+ */
+epwm2.epwm.$suggestSolution = "EPWM3";

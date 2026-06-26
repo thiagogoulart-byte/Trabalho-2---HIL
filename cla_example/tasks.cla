@@ -1,0 +1,125 @@
+#include "driverlib.h"
+#include "board.h"
+#include "shared_vars.h"
+#include "CLAmath.h"
+
+float e0, e1, e2;
+float ur0, ur1, ur2;
+
+float erro;
+float up;
+float u_n;
+
+float theta;
+float Iref;
+int n_pico;
+
+float dA, dB;
+uint32_t CAMPA, CAMPB;
+extern uint32_t ePwm_TimeBase;
+
+// extern float a1, a2, b0, b1, b2, ki, kp, Iref;
+
+//valor para 20khz
+#define a1 -1.999733f
+#define a2 1.0f
+
+#define b0 24.97e-6f
+#define b1 -17.76e-9f
+#define b2 -24.99e-6f
+
+#define kp 41.9f
+#define ki 58486.5f
+
+//valor para 5khz
+// #define a1    (-1.99431780052123f)
+// #define a2    ( 1.00000000000000f)
+
+// #define b0    ( 9.82054592384524e-5f)
+// #define b1    (-1.13213776461546e-6f)
+// #define b2    (-9.93375970030678e-5f)
+// #define kp    (10.471975f)
+// #define ki    (3655.409f)
+
+
+
+#define PI 3.1415f
+#define FREQ 60.0f
+#define PASSO 10000.0f
+#define AMP 13.0f
+
+#define NORM_ADC 15.0f/4095.0f
+
+
+
+
+float ADC_iL;
+extern float iL;
+float iL_medido;
+
+
+__interrupt void Cla1Task1()
+{
+    ADC_iL = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
+    //corrigir para ter a parte negativa
+    iL_medido = ADC_iL * 0.00976801f - 20.0f;
+
+    theta += 2.0f * PI * FREQ / PASSO;
+
+    if(theta >= 2.0f * PI)
+    {
+        theta -= 2.0f * PI;   
+        // n_pico++;
+    }
+    // if(n_pico == 3){AMP = AMP/2.0f;}
+    // theta = PI*0.5;
+
+    Iref = AMP * CLAsin(theta);
+
+    // erro = Iref - iL_adc;
+    // erro = Iref - iL;
+    erro = Iref - iL_medido;
+
+    up = kp * erro;
+
+    e0 = ki * erro;
+
+    ur0 = - a1*ur1 - a2*ur2 + b0*e0 + b1*e1 + b2*e2;
+
+    e2 = e1;
+    e1 = e0;
+
+    ur2 = ur1;
+    ur1 = ur0;
+
+    u = up + ur0;
+    u = u + vg;
+    u = u/400.0f;
+
+    // u = 0.5 * CLAsin(theta);
+    // u_n = -u;
+    if(u > 0.9f)
+        u = 0.9f;
+
+    if(u < -0.9f)
+        u = -0.9f;
+
+    dA = ( u + 1.0f)*0.5f;
+    dB = (-u + 1.0f)*0.5f;   
+    
+    CAMPA = dA * ePwm_TimeBase;
+    CAMPB = dB * ePwm_TimeBase;
+    fResult = theta;
+
+    EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, CAMPA);
+    // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_B, CAMPA); //
+    EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_A, CAMPA);
+    // EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_B, CAMPB); //
+
+    //fazer pwm 
+    //fazer pwm negativo
+
+        // protocolSendData(SCIO_BASE, &u, sizeof(float));
+    // }
+
+}
