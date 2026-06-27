@@ -45,7 +45,7 @@ extern uint32_t ePwm_TimeBase;
 
 #define PI 3.1415f
 #define FREQ 60.0f
-#define PASSO 10000.0f
+#define PASSO 40000.0f
 #define AMP 13.0f
 
 #define NORM_ADC 15.0f/4095.0f
@@ -113,7 +113,7 @@ __interrupt void Cla1Task1()
 
     EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, CAMPA);
     // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_B, CAMPA); //
-    EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_A, CAMPA);
+    EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_A, CAMPB);
     // EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_B, CAMPB); //
 
     //fazer pwm 
