@@ -8,15 +8,13 @@ float ur0, ur1, ur2;
 
 float erro;
 float up;
-float u_n;
 
 float theta;
 float Iref;
 int n_pico;
 
-float dA, dB;
+uint32_t dA, dB;
 float uA, uB;
-uint32_t CAMPA, CAMPB;
 extern uint32_t ePwm_TimeBaseA;
 extern uint32_t ePwm_TimeBaseB;
 
@@ -45,15 +43,10 @@ extern uint32_t ePwm_TimeBaseB;
 
 
 
-#define PI 3.1415f
-#define FREQ 60.0f
-#define PASSO 15e6f
+// #define PI 3.1415f
+// #define FREQ 60.0f
+// #define PASSO 15e6f
 #define AMP 13.0f
-
-#define NORM_ADC 15.0f/4095.0f
-
-
-
 
 float ADC_iL;
 extern float iL;
@@ -64,13 +57,13 @@ __interrupt void Cla1Task1()
 {
     ADC_iL = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
     //corrigir para ter a parte negativa
-    iL_medido = ADC_iL * 0.00976801f - 20.0f;
+    iL_medido = ADC_iL * 0.00976801f - 20.0f; // 40/4095
 
-    theta += 2.0f * PI * FREQ / PASSO;
-
-    if(theta >= 2.0f * PI)
+    // theta += 2.0f * PI * FREQ / PASSO;
+    theta += 2.513274e-5f; //Resultado da conta acima
+    if(theta >= 6.283185f)
     {
-        theta -= 2.0f * PI;   
+        theta -= 6.283185f;   
         // n_pico++;
     }
     // if(n_pico == 3){AMP = AMP/2.0f;}
@@ -96,10 +89,9 @@ __interrupt void Cla1Task1()
 
     u = up + ur0;
     u = u + vg;
-    u = u/400.0f;
+    u = u * 0.0025f; // 1/400 do Vdc
 
-    // u = 0.5 * CLAsin(theta);
-    // u_n = -u;
+    // Saturação do u
     if(u > 0.9f)
         u = 0.9f;
 
@@ -107,21 +99,14 @@ __interrupt void Cla1Task1()
         u = -0.9f;
 
     uA = ( u + 1.0f)*0.5f;
-    uB = (-u + 1.0f)*0.5f;   
+    uB = (-u + 1.0f)*0.5f; // negativo para fazer o pwm unipolar
     
     dA = uA * ePwm_TimeBaseA;
     dB = uB * ePwm_TimeBaseB;
     
 
     EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, dA);
-    // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_B, dA); //
     EPWM_setCounterCompareValue(EPWM2_BASE, EPWM_COUNTER_COMPARE_A, dB);
-    // EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_B, dB); //
     fResult = theta;
-    //fazer pwm 
-    //fazer pwm negativo
-
-        // protocolSendData(SCIO_BASE, &u, sizeof(float));
-    // }
 
 }
