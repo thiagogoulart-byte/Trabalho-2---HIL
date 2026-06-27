@@ -147,114 +147,25 @@ void main(void)
     for(;;)
     {
 
-
-        // if (g_new_step_ready)
-        // {
-        //     g_new_step_ready = false;
-
-        //     if(S1 == 1 && S4 == 1){
-        //         vinv = Vdc;
-        //         // iL = 1001.0f;
-        //     }
-        //     else if(S2 == 1 && S3 == 1){
-        //         vinv = -Vdc;
-        //         // iL = 0110.0f;
-        //     }
-        //     else
-        //     {
-        //         vinv = 0.0;
-        //         // iL = 0.0f;
-        //     }    
-                
-            
-
-        //     u0 = vinv - vg;
-
-        //     iL = a11*iL0 + b00*u0 + b11*u1;
-        //     buffer_iL[idx_buffer] = iL;
-        //     buffer_vinv[idx_buffer] = vinv/20;
-        //     buffer_u[idx_buffer] = u*20.0f;
-        //     buffer_pwm1A[idx_buffer] = S1 * 10.0f;
-        //     buffer_pwm1B[idx_buffer] = S2 * 10.0f;
-        //     buffer_pwm3A[idx_buffer] = S3 * 10.0f;
-        //     buffer_pwm3B[idx_buffer] = S4 * 10.0f;
-        //     idx_buffer++;
-
-        //     if(idx_buffer >= TAM_BUFFER)
-        //     {
-        //         idx_buffer = 0;      // volta para o início
-        //     }
-        
-
-        //     // ang += 2.0f * 3.1415f * 60.0 / 40000.0f; //para fazer o vg senoidal //talvez pegar o theta da cla
-        //     // if(ang >= 2.0f * 3.1415f)
-        //     // {
-        //     //     ang -= 2.0f * 3.1415f;     
-        //     // }
-        //     // vg = 180*sinf(ang);
-
-        //     u1  = u0;
-        //     iL0 = iL;
-        //     if(iL > 20.0f)
-        //     {
-        //         iL = 20.0f;
-        //     }
-        //     if(iL < -20.0f)
-        //     {
-        //         iL = -20.0f;
-        //     }
-
-        //     DAC_iL = (uint16_t) ((iL + 20.0f)*(4095.0f/40.0f));
-        
-        //     DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
-
-        //     CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
-            
-        //     // DEVICE_DELAY_US(10000);
-        // }
-    
-    }
-}
-
-
-
-
-__interrupt void cla1Isr1 ()
-{
-    
-    fVal = fResult;
-    Interrupt_clearACKGroup(INT_myCLA01_INTERRUPT_ACK_GROUP);
-}
-
-__interrupt void INT_readGPIO_ISR(void)
-{
-
-    // Atualiza contador
-    // g_step_counter++;
-
-    // // Reinicia no fim do ciclo PWM
-    // if (g_step_counter >= N_STEPS_PER_CYCLE)
-    //     g_step_counter = 0;
-
-    // Sinaliza para o loop principal que deve simular o pr�ximo passo
-    g_new_step_ready = true;
-
-     if (S1 == 1 && S2 == 0 && S3 == 0 && S4 == 1) 
+        if (g_new_step_ready)
         {
-            // Braço 1 em +Vdc/2 e Braço 2 em -Vdc/2 -> Vinv = +Vdc
-            vinv = Vdc; 
-        }
-        else if (S1 == 0 && S2 == 1 && S3 == 1 && S4 == 0) 
-        {
-            // Braço 1 em -Vdc/2 e Braço 2 em +Vdc/2 -> Vinv = -Vdc
-            vinv = -Vdc; 
-        }
-        else 
-        {
-            // Qualquer outra combinação (estados nulos ou períodos de dead-band)
-            vinv = 0.0f; 
-        }  
-                        
+            g_new_step_ready = false;
+
+            if (S1 == 1 && S2 == 0 && S3 == 0 && S4 == 1) 
+            {
+                // Braço 1 em +Vdc/2 e Braço 2 em -Vdc/2 -> Vinv = +Vdc
+                vinv = Vdc; 
+            }
+            else if (S1 == 0 && S2 == 1 && S3 == 1 && S4 == 0) 
+            {
+                // Braço 1 em -Vdc/2 e Braço 2 em +Vdc/2 -> Vinv = -Vdc
+                vinv = -Vdc; 
+            }
+            else 
+            {
+                // Qualquer outra combinação (estados nulos ou períodos de dead-band)
+                vinv = 0.0f; 
+            }  
             
 
             u0 = vinv - vg;
@@ -298,6 +209,35 @@ __interrupt void INT_readGPIO_ISR(void)
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
 
             CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
+            
+            // DEVICE_DELAY_US(10000);
+        }
+    
+    }
+}
+
+
+
+
+__interrupt void cla1Isr1 ()
+{
+    
+    fVal = fResult;
+    Interrupt_clearACKGroup(INT_myCLA01_INTERRUPT_ACK_GROUP);
+}
+
+__interrupt void INT_readGPIO_ISR(void)
+{
+
+    // Atualiza contador
+    // g_step_counter++;
+
+    // // Reinicia no fim do ciclo PWM
+    // if (g_step_counter >= N_STEPS_PER_CYCLE)
+    //     g_step_counter = 0;
+
+    // Sinaliza para o loop principal que deve simular o pr�ximo passo
+    g_new_step_ready = true;
 
     Interrupt_clearACKGroup(INT_readGPIO_INTERRUPT_ACK_GROUP);
 
@@ -306,44 +246,28 @@ __interrupt void INT_readGPIO_ISR(void)
 __interrupt void INT_GPIO_S1_XINT_ISR(void)
 {
     S1 = GPIO_readPin(GPIO_S1);
-
-    S2 = GPIO_readPin(GPIO_S2);
-    S4 = GPIO_readPin(GPIO_S4);
-    S3 = GPIO_readPin(GPIO_S3);
     
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S2_XINT_ISR(void)
 {
+    
     S2 = GPIO_readPin(GPIO_S2);
-
-    S1 = GPIO_readPin(GPIO_S1);
-    S4 = GPIO_readPin(GPIO_S4);
-    S3 = GPIO_readPin(GPIO_S3);
-
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 
 __interrupt void INT_GPIO_S3_XINT_ISR(void)
 {
-    S1 = GPIO_readPin(GPIO_S1);
-    S2 = GPIO_readPin(GPIO_S2);
-    S4 = GPIO_readPin(GPIO_S4);
 
     S3 = GPIO_readPin(GPIO_S3);
-    
 
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S4_XINT_ISR(void)
 {
-    S1 = GPIO_readPin(GPIO_S1);
-    S2 = GPIO_readPin(GPIO_S2);
-    S3 = GPIO_readPin(GPIO_S3);
-    
     S4 = GPIO_readPin(GPIO_S4);
 
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
