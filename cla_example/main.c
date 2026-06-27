@@ -51,7 +51,8 @@ volatile bool S4;
 // #define ki    (3655.409f)
 
 
-uint32_t ePwm_TimeBase;
+uint32_t ePwm_TimeBaseA;
+uint32_t ePwm_TimeBaseB;
 // uint32_t ePwm_MinDuty;
 // uint32_t ePwm_MaxDuty;
 // uint32_t ePwm_curDuty;
@@ -60,14 +61,14 @@ uint32_t ePwm_TimeBase;
 // float theta = 0.0f;
 
 // float amplitude = 13.0f;
-float fs = 5000.0f;     // 
+float fs = 20000.0f;     // 
 #define freq 60.0f     //
 // #define fsck 15e5f
 
 
 // Definições de Constantes
 //
-#define F_PWM                  5000.0f     // Frequência de chaveamento (Hz)
+#define F_PWM                  20000.0f     // Frequência de chaveamento (Hz)
 #define T_PWM                  (1.0f / F_PWM) // Período de chaveamento (s)
 #define DT_SIM                 0.000001f    // Passo de simulação (5 us)
 #define N_STEPS_PER_CYCLE      (uint32_t)(T_PWM / DT_SIM) // Passos por ciclo PWM
@@ -95,7 +96,8 @@ float fVal;
 #pragma DATA_SECTION(fResult,"Cla1ToCpuMsgRAM");
 float fResult;
 
-#pragma DATA_SECTION(ePwm_TimeBase,"CpuToCla1MsgRAM");
+#pragma DATA_SECTION(ePwm_TimeBaseA,"CpuToCla1MsgRAM");
+#pragma DATA_SECTION(ePwm_TimeBaseB,"CpuToCla1MsgRAM");
 
 #pragma DATA_SECTION(fResult,"Cla1ToCpuMsgRAM");
 extern uint32_t CAMPA; 
@@ -127,7 +129,8 @@ void main(void)
     Board_init();
 
 
-    ePwm_TimeBase = EPWM_getTimeBasePeriod(myEPWM0_BASE);
+    ePwm_TimeBaseA = EPWM_getTimeBasePeriod(myEPWM0_BASE);
+    ePwm_TimeBaseB = EPWM_getTimeBasePeriod(myEPWM1_BASE);
     // ePwm_MinDuty = (uint32_t) (0.95f * (float) ePwm_TimeBase);
     // ePwm_MaxDuty = (uint32_t) (0.05f * (float) ePwm_TimeBase);
 
@@ -226,7 +229,7 @@ __interrupt void cla1Isr1 ()
     Interrupt_clearACKGroup(INT_myCLA01_INTERRUPT_ACK_GROUP);
 }
 
-__interrupt void INT_readGPIO_ISR(void)
+__interrupt void INT_myCPUTIMER0_ISR(void)
 {
 
     // Atualiza contador
@@ -239,13 +242,14 @@ __interrupt void INT_readGPIO_ISR(void)
     // Sinaliza para o loop principal que deve simular o pr�ximo passo
     g_new_step_ready = true;
 
-    Interrupt_clearACKGroup(INT_readGPIO_INTERRUPT_ACK_GROUP);
+    Interrupt_clearACKGroup(INT_myCPUTIMER0_INTERRUPT_ACK_GROUP);
 
 }
 
 __interrupt void INT_GPIO_S1_XINT_ISR(void)
 {
     S1 = GPIO_readPin(GPIO_S1);
+    // S2 = GPIO_readPin(GPIO_S2);
     
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
@@ -254,7 +258,8 @@ __interrupt void INT_GPIO_S2_XINT_ISR(void)
 {
     
     S2 = GPIO_readPin(GPIO_S2);
-    Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
+    
+    Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }
 
 
@@ -262,7 +267,7 @@ __interrupt void INT_GPIO_S3_XINT_ISR(void)
 {
 
     S3 = GPIO_readPin(GPIO_S3);
-
+    // S4 = GPIO_readPin(GPIO_S4);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
@@ -270,5 +275,5 @@ __interrupt void INT_GPIO_S4_XINT_ISR(void)
 {
     S4 = GPIO_readPin(GPIO_S4);
 
-    Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
+    Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }

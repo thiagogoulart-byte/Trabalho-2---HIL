@@ -15,8 +15,10 @@ float Iref;
 int n_pico;
 
 float dA, dB;
+float uA, uB;
 uint32_t CAMPA, CAMPB;
-extern uint32_t ePwm_TimeBase;
+extern uint32_t ePwm_TimeBaseA;
+extern uint32_t ePwm_TimeBaseB;
 
 // extern float a1, a2, b0, b1, b2, ki, kp, Iref;
 
@@ -104,18 +106,18 @@ __interrupt void Cla1Task1()
     if(u < -0.9f)
         u = -0.9f;
 
-    dA = ( u + 1.0f)*0.5f;
-    dB = (-u + 1.0f)*0.5f;   
+    uA = ( u + 1.0f)*0.5f;
+    uB = (-u + 1.0f)*0.5f;   
     
-    CAMPA = dA * ePwm_TimeBase;
-    CAMPB = dB * ePwm_TimeBase;
+    dA = uA * ePwm_TimeBaseA;
+    dB = uB * ePwm_TimeBaseB;
+    
+
+    EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, dA);
+    // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_B, dA); //
+    EPWM_setCounterCompareValue(EPWM2_BASE, EPWM_COUNTER_COMPARE_A, dB);
+    // EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_B, dB); //
     fResult = theta;
-
-    EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, CAMPA);
-    // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_B, CAMPA); //
-    EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_A, CAMPB);
-    // EPWM_setCounterCompareValue(EPWM3_BASE, EPWM_COUNTER_COMPARE_B, CAMPB); //
-
     //fazer pwm 
     //fazer pwm negativo
 
