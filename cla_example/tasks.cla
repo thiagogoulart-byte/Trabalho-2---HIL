@@ -47,7 +47,7 @@ extern uint32_t ePwm_TimeBaseB;
 
 #define PI 3.1415f
 #define FREQ 60.0f
-#define PASSO 40000.0f
+#define PASSO 15e6f
 #define AMP 13.0f
 
 #define NORM_ADC 15.0f/4095.0f

@@ -134,7 +134,7 @@ void main(void)
     // ePwm_MinDuty = (uint32_t) (0.95f * (float) ePwm_TimeBase);
     // ePwm_MaxDuty = (uint32_t) (0.05f * (float) ePwm_TimeBase);
 
-    Ts = 1/fs;
+    Ts = 1/15e6;
     R = 2.0f*PI*freq*L/XR;
 
     a11 = ((2.0f*L/Ts) - R) / ((2.0f*L/Ts) + R);
@@ -207,7 +207,7 @@ void main(void)
                 iL = -20.0f;
             }
 
-            DAC_iL = (uint16_t) ((iL + 20.0f)*(4095.0f/40.0f));
+            DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f));
         
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
 
