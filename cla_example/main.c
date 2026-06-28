@@ -67,20 +67,24 @@ uint16_t DAC_iL;
 
 float ang;
 
-#define TAM_BUFFER 100
+#define TAM_BUFFER 500
 
 float buffer_iL[TAM_BUFFER];
-float buffer_vinv[TAM_BUFFER];
+// float buffer_vinv[TAM_BUFFER];
 float buffer_u[TAM_BUFFER];
 
-float buffer_pwm1A[TAM_BUFFER];  
-float buffer_pwm1B[TAM_BUFFER];  
-float buffer_pwm3A[TAM_BUFFER]; 
-float buffer_pwm3B[TAM_BUFFER];
+// float buffer_pwm1A[TAM_BUFFER];  
+// float buffer_pwm1B[TAM_BUFFER];  
+// float buffer_pwm3A[TAM_BUFFER]; 
+// float buffer_pwm3B[TAM_BUFFER];
 
 uint16_t idx_buffer = 0;
 
 volatile bool g_new_step_ready = true;
+
+uint32_t PULAR_PASSO = 1000;
+uint32_t contar_passos = 0;
+uint32_t temp_delay = 25;
 
 void main(void)
 {
@@ -133,19 +137,29 @@ void main(void)
             u0 = vinv - vg;
 
             iL = a11*iL0 + b00*u0 + b11*u1;
-            buffer_iL[idx_buffer] = iL;
-            buffer_vinv[idx_buffer] = vinv*0.05f;
-            buffer_u[idx_buffer] = u*20.0f;
-            buffer_pwm1A[idx_buffer] = S1 * 10.0f;
-            buffer_pwm1B[idx_buffer] = S2 * 10.0f;
-            buffer_pwm3A[idx_buffer] = S3 * 10.0f;
-            buffer_pwm3B[idx_buffer] = S4 * 10.0f;
-            idx_buffer++;
-
-            if(idx_buffer >= TAM_BUFFER)
+            contar_passos++;
+            if (contar_passos>= PULAR_PASSO)
             {
-                idx_buffer = 0;      // volta para o início
+                contar_passos = 0;
+                buffer_iL[idx_buffer] = iL;
+                buffer_u[idx_buffer] = u*10.0f;
+                
+                idx_buffer++;
+
+                if(idx_buffer >= TAM_BUFFER)
+                {
+                    idx_buffer = 0;      // volta para o início
+                }
+    
             }
+            // buffer_iL[idx_buffer] = iL;
+            // buffer_vinv[idx_buffer] = vinv*0.05f;
+            // buffer_u[idx_buffer] = u*20.0f;
+            // buffer_pwm1A[idx_buffer] = S1 * 10.0f;
+            // buffer_pwm1B[idx_buffer] = S2 * 10.0f;
+            // buffer_pwm3A[idx_buffer] = S3 * 10.0f;
+            // buffer_pwm3B[idx_buffer] = S4 * 10.0f;
+
         
             u1  = u0;
             iL0 = iL;
@@ -161,7 +175,7 @@ void main(void)
             DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f));
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
             CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
-
+            DEVICE_DELAY_US(temp_delay);
         }
     }
 }
