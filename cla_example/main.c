@@ -41,7 +41,7 @@ float fs = 20000.0f;     //
 
 
 #pragma DATA_SECTION(vg, "CpuToCla1MsgRAM");
-float vg;
+volatile float vg = 0;
 
 #pragma DATA_SECTION(AMP, "CpuToCla1MsgRAM");
 volatile float AMP = 13.0f;
@@ -85,6 +85,9 @@ volatile bool g_new_step_ready = true;
 uint32_t PULAR_PASSO = 1000;
 uint32_t contar_passos = 0;
 uint32_t temp_delay = 25;
+extern float theta;
+#pragma DATA_SECTION(vg_ant, "CpuToCla1MsgRAM");
+float vg_ant;
 
 void main(void)
 {
@@ -96,7 +99,7 @@ void main(void)
     ePwm_TimeBaseA = EPWM_getTimeBasePeriod(myEPWM0_BASE);
     ePwm_TimeBaseB = EPWM_getTimeBasePeriod(myEPWM1_BASE);
 
-    Ts = 1/15e6;
+    Ts = 1.0f / 15000000.0f;
     R = 2.0f*PI*freq*L/XR;
 
     a11 = ((2.0f*L/Ts) - R) / ((2.0f*L/Ts) + R);
@@ -118,7 +121,7 @@ void main(void)
             // {
             //     ang -= 2.0f * 3.1415f;     
             // }
-            vg = 220*sinf(fVal);
+            
 
             if (S1 == 1 && S4 == 1) 
             {
@@ -134,7 +137,7 @@ void main(void)
             }  
             
 
-            u0 = vinv - vg;
+            u0 = vinv - vg_ant;
 
             iL = a11*iL0 + b00*u0 + b11*u1;
             contar_passos++;
@@ -163,6 +166,8 @@ void main(void)
         
             u1  = u0;
             iL0 = iL;
+            vg = 311*sinf(theta);
+            vg_ant = vg;
             if(iL > 20.0f)
             {
                 iL = 20.0f;
@@ -175,7 +180,7 @@ void main(void)
             DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f));
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
             CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
-            DEVICE_DELAY_US(temp_delay);
+            //DEVICE_DELAY_US(temp_delay);
         }
     }
 }

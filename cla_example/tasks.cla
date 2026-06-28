@@ -51,6 +51,8 @@ extern uint32_t ePwm_TimeBaseB;
 float ADC_iL;
 extern float iL;
 float iL_medido;
+extern float vg_ant;
+volatile float u_ant;
 
 
 __interrupt void Cla1Task1()
@@ -61,7 +63,8 @@ __interrupt void Cla1Task1()
 
     // theta += 2.0f * PI * FREQ / PASSO;
     // theta += 3.769911e-5f; //Resultado da conta acima 10e6
-    theta += 2.513274e-5f;
+    theta += 2.513274e-5f; // 15e6
+    // theta += 0.01884955f;
     // theta += 9.424777961e-5f;
     if(theta >= 6.283185f)
     {
@@ -74,8 +77,8 @@ __interrupt void Cla1Task1()
     Iref = AMP * CLAsin(theta);
 
     // erro = Iref - iL_adc;
-    // erro = Iref - iL;
-    erro = Iref - iL_medido;
+    erro = Iref - iL;
+    // erro = Iref - iL_medido;
 
     up = kp * erro;
 
@@ -90,7 +93,7 @@ __interrupt void Cla1Task1()
     ur1 = ur0;
 
     u = up + ur0;
-    u = u + vg;
+    u = u + vg_ant;
     u = u * 0.0025f; // 1/400 do Vdc
 
     // Saturação do u

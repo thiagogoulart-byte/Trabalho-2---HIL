@@ -17,7 +17,7 @@ extern float AMP;
 extern uint32_t ePwm_TimeBaseA;
 extern uint32_t ePwm_TimeBaseB;
 // extern float Iref;
-// extern float theta;
+extern float theta;
 
 
 // extern float a1, a2, b0, b1, b2, ki, kp;
