@@ -67,10 +67,10 @@ uint16_t DAC_iL;
 
 float ang;
 
-#define TAM_BUFFER 500
+#define TAM_BUFFER 150
 
 float buffer_iL[TAM_BUFFER];
-// float buffer_vinv[TAM_BUFFER];
+float buffer_vinv[TAM_BUFFER];
 float buffer_u[TAM_BUFFER];
 
 // float buffer_pwm1A[TAM_BUFFER];  
@@ -84,7 +84,7 @@ volatile bool g_new_step_ready = true;
 
 uint32_t PULAR_PASSO = 1000;
 uint32_t contar_passos = 0;
-uint32_t temp_delay = 25;
+uint32_t temp_delay = 0;
 extern float theta;
 #pragma DATA_SECTION(vg_ant, "CpuToCla1MsgRAM");
 float vg_ant;
@@ -146,6 +146,11 @@ void main(void)
                 contar_passos = 0;
                 buffer_iL[idx_buffer] = iL;
                 buffer_u[idx_buffer] = u*10.0f;
+                buffer_vinv[idx_buffer] = vinv*0.05f;
+                // buffer_pwm1A[idx_buffer] = S1 * 10.0f;
+                // buffer_pwm1B[idx_buffer] = S2 * 10.0f;
+                // buffer_pwm3A[idx_buffer] = S3 * 10.0f;
+                // buffer_pwm3B[idx_buffer] = S4 * 10.0f;
                 
                 idx_buffer++;
 
@@ -180,7 +185,7 @@ void main(void)
             DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f));
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
             CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
-            //DEVICE_DELAY_US(temp_delay);
+            DEVICE_DELAY_US(temp_delay);
         }
     }
 }
@@ -202,12 +207,16 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
 __interrupt void INT_GPIO_S1_XINT_ISR(void)
 {
     S1 = GPIO_readPin(GPIO_S1);   
+        // g_new_step_ready = true;
+
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S2_XINT_ISR(void)
 {
     S2 = GPIO_readPin(GPIO_S2);   
+        // g_new_step_ready = true;
+
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }
 
@@ -215,11 +224,15 @@ __interrupt void INT_GPIO_S2_XINT_ISR(void)
 __interrupt void INT_GPIO_S3_XINT_ISR(void)
 {
     S3 = GPIO_readPin(GPIO_S3);
+        // g_new_step_ready = true;
+
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S4_XINT_ISR(void)
 {
     S4 = GPIO_readPin(GPIO_S4);
+        // g_new_step_ready = true;
+
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }

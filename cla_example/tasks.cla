@@ -64,6 +64,7 @@ __interrupt void Cla1Task1()
     // theta += 2.0f * PI * FREQ / PASSO;
     // theta += 3.769911e-5f; //Resultado da conta acima 10e6
     theta += 2.513274e-5f; // 15e6
+    // theta += 1.8849555e-5f; //20e6
     // theta += 0.01884955f;
     // theta += 9.424777961e-5f;
     if(theta >= 6.283185f)
@@ -77,8 +78,8 @@ __interrupt void Cla1Task1()
     Iref = AMP * CLAsin(theta);
 
     // erro = Iref - iL_adc;
-    erro = Iref - iL;
-    // erro = Iref - iL_medido;
+    // erro = Iref - iL;
+    erro = Iref - iL_medido;
 
     up = kp * erro;
 
@@ -97,11 +98,11 @@ __interrupt void Cla1Task1()
     u = u * 0.0025f; // 1/400 do Vdc
 
     // Saturação do u
-    if(u > 0.9f)
-        u = 0.9f;
+    if(u > 0.98f)
+        u = 0.98f;
 
-    if(u < -0.9f)
-        u = -0.9f;
+    if(u < -0.98f)
+        u = -0.98f;
 
     uA = ( u + 1.0f)*0.5f;
     uB = (-u + 1.0f)*0.5f; // negativo para fazer o pwm unipolar
