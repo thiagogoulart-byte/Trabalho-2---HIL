@@ -54,30 +54,24 @@ float iL_medido;
 extern float vg_ant;
 volatile float u_ant;
 
+// extern float PASSO;
+
 
 __interrupt void Cla1Task1()
 {
     ADC_iL = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
     //corrigir para ter a parte negativa
-    iL_medido = ADC_iL * 0.00976801f - 20.0f; // 40/4095
+    iL_medido = ADC_iL * 0.009768009768f - 20.0f; // 40/4095
 
     // theta += 2.0f * PI * FREQ / PASSO;
-    // theta += 3.769911e-5f; //Resultado da conta acima 10e6
-    theta += 2.513274e-5f; // 15e6
-    // theta += 1.8849555e-5f; //20e6
-    // theta += 0.01884955f;
-    // theta += 9.424777961e-5f;
+    theta += 376.9911184f/20.0e5f; 
+ 
     if(theta >= 6.283185f)
     {
         theta -= 6.283185f;   
-        // n_pico++;
     }
-    // if(n_pico == 3){AMP = AMP/2.0f;}
-    // theta = PI*0.5;
-
     Iref = AMP * CLAsin(theta);
 
-    // erro = Iref - iL_adc;
     // erro = Iref - iL;
     erro = Iref - iL_medido;
 

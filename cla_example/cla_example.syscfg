@@ -63,7 +63,8 @@ cputimer1.$name                    = "myCPUTIMER0";
 cputimer1.enableInterrupt          = true;
 cputimer1.registerInterrupts       = true;
 cputimer1.startTimer               = true;
-cputimer1.timerPeriod              = 9999;
+cputimer1.emulationMode            = "CPUTIMER_EMULATIONMODE_RUNFREE";
+cputimer1.timerPeriod              = 199;
 cputimer1.timerInt.enableInterrupt = true;
 
 dac1.$name            = "DAC_iL";

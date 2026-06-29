@@ -19,7 +19,9 @@ float a11;
 float b00;
 float b11;
 
-float vinv, iL0, iL1, u0, u1;
+float vinv, iL1, u1;
+float iL0 = 0.0f;
+float u0 = 0.0f;
 float Vdc = 400.0f;
 // float vg = 220.0f;
 
@@ -67,7 +69,7 @@ uint16_t DAC_iL;
 
 float ang;
 
-#define TAM_BUFFER 150
+#define TAM_BUFFER 1000
 
 float buffer_iL[TAM_BUFFER];
 float buffer_vinv[TAM_BUFFER];
@@ -82,12 +84,16 @@ uint16_t idx_buffer = 0;
 
 volatile bool g_new_step_ready = true;
 
-uint32_t PULAR_PASSO = 1000;
+uint32_t PULAR_PASSO = 1;
 uint32_t contar_passos = 0;
 uint32_t temp_delay = 0;
 extern float theta;
 #pragma DATA_SECTION(vg_ant, "CpuToCla1MsgRAM");
 float vg_ant;
+float di_dt;
+float teste_iL_dac;
+float a;
+float b;
 
 void main(void)
 {
@@ -99,11 +105,14 @@ void main(void)
     ePwm_TimeBaseA = EPWM_getTimeBasePeriod(myEPWM0_BASE);
     ePwm_TimeBaseB = EPWM_getTimeBasePeriod(myEPWM1_BASE);
 
-    Ts = 1.0f / 15000000.0f;
+    Ts = 1.0f / (20.0e5f);
     R = 2.0f*PI*freq*L/XR;
+    float den = (2.0f * L / Ts) + R;
 
-    a11 = ((2.0f*L/Ts) - R) / ((2.0f*L/Ts) + R);
-    b00 = 1.0f / ((2.0f*L/Ts) + R);
+
+    // Constantes do modelo
+    a11 = ((2.0f * L / Ts) - R) / den;
+    b00 = 1.0f / den;
     b11 = b00;
 
     EINT;
@@ -116,76 +125,40 @@ void main(void)
         {
             g_new_step_ready = false;
 
-            // ang += 2.0f * 3.1415f * 60.0 * Ts; //para fazer o vg senoidal //talvez pegar o theta da cla
-            // if(ang >= 2.0f * 3.1415f)
-            // {
-            //     ang -= 2.0f * 3.1415f;     
-            // }
+            ang += 2.0f * 3.1415f * 60.0 * Ts; 
+            if(ang >= 6.283185f)  ang -= 6.283185f;     
+            vg = 311.1269f*sinf(ang); // Tensão da rede
             
-
-            if (S1 == 1 && S4 == 1) 
-            {
-                vinv = Vdc; 
-            }
-            else if (S2 == 1 && S3 == 1) 
-            {
-                vinv = -Vdc; 
-            }
-            else 
-            {
-                vinv = 0.0f; 
-            }  
-            
+            // Chaveamento
+            if (S1 == 1 && S4 == 1)       vinv = Vdc; 
+            else if (S2 == 1 && S3 == 1)  vinv = -Vdc; 
+            else                          vinv = 0.0f;
 
             u0 = vinv - vg_ant;
-
+        
             iL = a11*iL0 + b00*u0 + b11*u1;
-            contar_passos++;
-            if (contar_passos>= PULAR_PASSO)
-            {
-                contar_passos = 0;
-                buffer_iL[idx_buffer] = iL;
-                buffer_u[idx_buffer] = u*10.0f;
-                buffer_vinv[idx_buffer] = vinv*0.05f;
-                // buffer_pwm1A[idx_buffer] = S1 * 10.0f;
-                // buffer_pwm1B[idx_buffer] = S2 * 10.0f;
-                // buffer_pwm3A[idx_buffer] = S3 * 10.0f;
-                // buffer_pwm3B[idx_buffer] = S4 * 10.0f;
-                
-                idx_buffer++;
 
-                if(idx_buffer >= TAM_BUFFER)
-                {
-                    idx_buffer = 0;      // volta para o início
-                }
-    
-            }
-            // buffer_iL[idx_buffer] = iL;
+            buffer_iL[idx_buffer] = iL;
+            // buffer_u[idx_buffer] = u*10.0f;
             // buffer_vinv[idx_buffer] = vinv*0.05f;
-            // buffer_u[idx_buffer] = u*20.0f;
             // buffer_pwm1A[idx_buffer] = S1 * 10.0f;
             // buffer_pwm1B[idx_buffer] = S2 * 10.0f;
             // buffer_pwm3A[idx_buffer] = S3 * 10.0f;
             // buffer_pwm3B[idx_buffer] = S4 * 10.0f;
-
-        
+            
+            idx_buffer++;
+            if(idx_buffer >= TAM_BUFFER)  idx_buffer = 0;    
+    
+            // Atualização das variávies 
             u1  = u0;
             iL0 = iL;
-            vg = 311*sinf(theta);
             vg_ant = vg;
-            if(iL > 20.0f)
-            {
-                iL = 20.0f;
-            }
-            if(iL < -20.0f)
-            {
-                iL = -20.0f;
-            }
 
-            DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f));
+            // Normalização do DAC em 20A
+            // DAC_iL = (uint16_t) ((teste_iL_dac + 20.0f)*(102.375f));
+            DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f)); //4095/40
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
             CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
-            DEVICE_DELAY_US(temp_delay);
         }
     }
 }
@@ -207,16 +180,12 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
 __interrupt void INT_GPIO_S1_XINT_ISR(void)
 {
     S1 = GPIO_readPin(GPIO_S1);   
-        // g_new_step_ready = true;
-
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S2_XINT_ISR(void)
 {
     S2 = GPIO_readPin(GPIO_S2);   
-        // g_new_step_ready = true;
-
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }
 
@@ -224,15 +193,11 @@ __interrupt void INT_GPIO_S2_XINT_ISR(void)
 __interrupt void INT_GPIO_S3_XINT_ISR(void)
 {
     S3 = GPIO_readPin(GPIO_S3);
-        // g_new_step_ready = true;
-
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
 __interrupt void INT_GPIO_S4_XINT_ISR(void)
 {
     S4 = GPIO_readPin(GPIO_S4);
-        // g_new_step_ready = true;
-
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP12);
 }
