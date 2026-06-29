@@ -56,7 +56,6 @@ volatile float u_ant;
 
 // extern float PASSO;
 
-
 __interrupt void Cla1Task1()
 {
     ADC_iL = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
