@@ -3,109 +3,106 @@
 #include "shared_vars.h"
 #include "CLAmath.h"
 
+//Valores para do controlador a 20khz
+#define a1 -1.999733f
+#define a2 1.0f
+#define b0 24.97e-6f
+#define b1 -17.76e-9f
+#define b2 -24.99e-6f
+#define kp 41.9f
+#define ki 58486.5f
+
+// Valores de projeto
+// #define PI 3.1415f
+// #define FREQ 60.0f
+#define POT 2000 // Potência desejada
+#define V_GRID 220 // Tensão da rede
+#define AMP (POT * 1.414213562f/V_GRID) //Amplitude da corrente appox 12.9
+
+//Variáveis para referência
+float Iref;
+float theta;
+volatile float ampli;
+
+// Variáveis para o controlador
 float e0, e1, e2;
 float ur0, ur1, ur2;
-
 float erro;
 float up;
+float u;
 
-float theta;
-float Iref;
-int n_pico;
-
+// Variáveis para PWM
 uint32_t dA, dB;
 float uA, uB;
 extern uint32_t ePwm_TimeBaseA;
 extern uint32_t ePwm_TimeBaseB;
 
-// extern float a1, a2, b0, b1, b2, ki, kp, Iref;
-
-//valor para 20khz
-#define a1 -1.999733f
-#define a2 1.0f
-
-#define b0 24.97e-6f
-#define b1 -17.76e-9f
-#define b2 -24.99e-6f
-
-#define kp 41.9f
-#define ki 58486.5f
-
-//valor para 5khz
-// #define a1    (-1.99431780052123f)
-// #define a2    ( 1.00000000000000f)
-
-// #define b0    ( 9.82054592384524e-5f)
-// #define b1    (-1.13213776461546e-6f)
-// #define b2    (-9.93375970030678e-5f)
-// #define kp    (10.471975f)
-// #define ki    (3655.409f)
-
-
-
-// #define PI 3.1415f
-// #define FREQ 60.0f
-// #define PASSO 15e6f
-#define AMP 13.0f
-
+// Variáveis para leitura da corrente
 float ADC_iL;
-extern float iL;
 float iL_medido;
-extern float vg_ant;
-volatile float u_ant;
 
-// extern float PASSO;
+// Variáveis para mudar potência
+bool mudou_amp;
+int cont;
+
+// Variávies usadas no controle direta do controlador
+extern float iL;
+extern float vg_ant; // Usando uma amostra atrasada
 
 __interrupt void Cla1Task1()
 {
+    // Leitura do ADC e normalização do valor lido (em 20A)
     ADC_iL = ADC_readResult(ADC0_RESULT_BASE, ADC0_SOC0);
-    //corrigir para ter a parte negativa
     iL_medido = ADC_iL * 0.009768009768f - 20.0f; // 40/4095
 
+    // Referência, variar o ângulo e calcular a corrente
     // theta += 2.0f * PI * FREQ / PASSO;
     theta += 376.9911184f/20.0e5f; 
- 
     if(theta >= 6.283185f)
     {
-        theta -= 6.283185f;   
+        theta -= 6.283185f;
+        cont++; // Para mudar potência
     }
-    Iref = AMP * CLAsin(theta);
+    // Mudar para 0.5pu
+    if((theta >= 1.570796327f && cont > 50))   mudou_amp = true;
+    else if (cont<1) mudou_amp = false;
+    
+    if(mudou_amp) ampli = AMP * 0.5f;      // 0,5 pu
+    else ampli = AMP;     // 1 pu
 
-    // erro = Iref - iL;
+    Iref = ampli * CLAsin(theta); // Corrente de referência
+
+    // erro = Iref - iL; //Para pegar o iL direto da main na CPU
     erro = Iref - iL_medido;
 
+    // Controlador
     up = kp * erro;
 
     e0 = ki * erro;
 
     ur0 = - a1*ur1 - a2*ur2 + b0*e0 + b1*e1 + b2*e2;
 
+    u = up + ur0;
+    u = u + vg_ant; //Feedforward
+    u = u * 0.0025f; // 1/400 do Vdc
+
+    // Atualização das variáveis do controlador
     e2 = e1;
     e1 = e0;
-
     ur2 = ur1;
     ur1 = ur0;
 
-    u = up + ur0;
-    u = u + vg_ant;
-    u = u * 0.0025f; // 1/400 do Vdc
-
     // Saturação do u
-    if(u > 0.98f)
-        u = 0.98f;
+    if(u > 0.98f) u = 0.98f;
+    if(u < -0.98f) u = -0.98f;
 
-    if(u < -0.98f)
-        u = -0.98f;
-
+    // Configuração para fazer o pwm unipolar
     uA = ( u + 1.0f)*0.5f;
     uB = (-u + 1.0f)*0.5f; // negativo para fazer o pwm unipolar
     
     dA = uA * ePwm_TimeBaseA;
     dB = uB * ePwm_TimeBaseB;
     
-
     EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, dA);
     EPWM_setCounterCompareValue(EPWM2_BASE, EPWM_COUNTER_COMPARE_A, dB);
-    fResult = theta;
-
 }
