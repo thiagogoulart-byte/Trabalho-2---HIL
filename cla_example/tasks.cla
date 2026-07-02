@@ -57,7 +57,7 @@ __interrupt void Cla1Task1()
 
     // Referência, variar o ângulo e calcular a corrente
     // theta += 2.0f * PI * FREQ / PASSO;
-    theta += 376.9911184f/20.0e5f; 
+    theta += 376.9911184f/40.0e4f; 
     if(theta >= 6.283185f)
     {
         theta -= 6.283185f;

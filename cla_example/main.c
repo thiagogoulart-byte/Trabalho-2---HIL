@@ -80,7 +80,7 @@ void main(void)
     ePwm_TimeBaseA = EPWM_getTimeBasePeriod(myEPWM0_BASE);
     ePwm_TimeBaseB = EPWM_getTimeBasePeriod(myEPWM1_BASE);
 
-    Ts = 1.0f / (10.0e5f);
+    Ts = 1.0f / (40.0e4f);
     R = 2.0f*PI*FREQ*L/XR;
 
     // Constantes do modelo
@@ -133,7 +133,7 @@ void main(void)
             // DAC_iL = (uint16_t) ((teste_iL_dac + 20.0f)*(102.375f));
             DAC_iL = (uint16_t) ((iL + 20.0f)*(102.375f)); //4095/40
             DAC_setShadowValue(DAC_iL_BASE, (uint16_t) (DAC_iL));
-            CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
+            // CLA_forceTasks(myCLA0_BASE,CLA_TASKFLAG_1);
         }
     }
 }
