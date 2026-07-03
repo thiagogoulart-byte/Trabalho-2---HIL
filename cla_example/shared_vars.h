@@ -13,5 +13,5 @@ extern float vg;
 extern float vg_ant;
 extern uint32_t ePwm_TimeBaseA;
 extern uint32_t ePwm_TimeBaseB;
-
+extern bool mudou_amp;
 #endif /* SHARED_VARS_H_ */

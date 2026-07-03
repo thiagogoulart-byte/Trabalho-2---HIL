@@ -64,7 +64,7 @@ __interrupt void Cla1Task1()
         cont++; // Para mudar potência
     }
     // Mudar para 0.5pu
-    if((theta >= 1.570796327f && cont > 50))   mudou_amp = true;
+    if((theta >= 1.570796327f && cont > 5))   mudou_amp = true;
     else if (cont<1) mudou_amp = false;
     
     if(mudou_amp) ampli = AMP * 0.5f;      // 0,5 pu

@@ -70,6 +70,9 @@ float buffer_iL[TAM_BUFFER];
 // Variável para rodar a planta
 volatile bool g_new_step_ready = true;
 
+int n_cont = 0;
+extern bool mudou_amp;
+
 void main(void)
 {
     Device_init();
@@ -123,6 +126,16 @@ void main(void)
             
             idx_buffer++;
             if(idx_buffer >= TAM_BUFFER)  idx_buffer = 0;    
+            
+            // Ideia para pegar a mudança de potência
+            // if (mudou_amp) // Quando mudar na task começa a contar aqui
+            // {
+            //     n_cont++; 
+            // }
+            // if (n_cont >= 500) // até 500 porque é metade do buffer
+            // {
+            //     n_cont = 0; //só para colocar um breakpoint e pegar o print
+            // }
     
             // Atualização das variávies 
             u1  = u0;
